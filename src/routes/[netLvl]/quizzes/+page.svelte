@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte';
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
+	import { page } from '$app/stores';
+
+	const netLvl = $page.params.netLvl;
 
 	let questions = [],
 		answers = [],
@@ -11,29 +14,105 @@
 
 	async function getQuestions() {
 		try {
-			const getQuestion = gql`
-				query MyQuery {
-					net_1_net_1_questions {
-						question
-						questionid
-						net_1_answers {
-							answer
-							answerid
-						}
-						net_1_incorrect_answers {
-							incorrectanswer
-							incorrectanswerid
+			let getQuestion;
+
+			if (netLvl == 1) {
+				getQuestion = gql`
+					query MyQuery {
+						net_1_net_questions(limit: 10) {
+							question
+							questionid
+							net_answers {
+								answer
+								answerid
+							}
+							net_incorrect_answers {
+								incorrectanswer
+								incorrectanswerid
+							}
 						}
 					}
-				}
-			`;
+				`;
 
-			const myres = client.query({
-				query: getQuestion,
-				Method: 'POST'
-			});
+				const myres = client.query({
+					query: getQuestion,
+					Method: 'POST'
+				});
 
-			return (await myres).data.net_1_net_1_questions;
+				return (await myres).data.net_1_net_questions;
+			} else if (netLvl == 2) {
+				getQuestion = gql`
+					query MyQuery {
+						net_2_net_questions(limit: 10) {
+							question
+							questionid
+							net_answers {
+								answer
+								answerid
+							}
+							net_incorrect_answers {
+								incorrectanswer
+								incorrectanswerid
+							}
+						}
+					}
+				`;
+
+				const myres = client.query({
+					query: getQuestion,
+					Method: 'POST'
+				});
+
+				return (await myres).data.net_2_net_questions;
+			} else if (netLvl == 3) {
+				getQuestion = gql`
+					query MyQuery {
+						net_3_net_questions(limit: 10) {
+							question
+							questionid
+							net_answers {
+								answer
+								answerid
+							}
+							net_incorrect_answers {
+								incorrectanswer
+								incorrectanswerid
+							}
+						}
+					}
+				`;
+
+				const myres = client.query({
+					query: getQuestion,
+					Method: 'POST'
+				});
+
+				return (await myres).data.net_3_net_questions;
+			} else if (netLvl == 4) {
+				getQuestion = gql`
+					query MyQuery {
+						net_4_net_questions(limit: 10) {
+							question
+							questionid
+							net_answers {
+								answer
+								answerid
+							}
+							net_incorrect_answers {
+								incorrectanswer
+								incorrectanswerid
+							}
+						}
+					}
+				`;
+
+				const myres = client.query({
+					query: getQuestion,
+					Method: 'POST'
+				});
+
+				return (await myres).data.net_4_net_questions;
+			}
 		} catch (err) {
 			console.log(err);
 		}
@@ -62,7 +141,7 @@
 
 	function checkAnswers() {
 		checkedAnswers = questions.map((question) => {
-			return question.net_1_answers.map((answer) => {
+			return question.net_answers.map((answer) => {
 				if (answer.answerid == parseInt(answers[question.questionid - 1])) {
 					numCorrect++;
 					return true;
@@ -90,7 +169,7 @@
 				<div class="question">
 					<h3>{question.question}</h3>
 
-					{#each question.net_1_answers as answer}
+					{#each question.net_answers as answer}
 						<div class="answer">
 							<input
 								type="radio"
@@ -102,7 +181,7 @@
 						</div>
 					{/each}
 
-					{#each question.net_1_incorrect_answers as incorrectanswer}
+					{#each question.net_incorrect_answers as incorrectanswer}
 						<div class="answer">
 							<input
 								type="radio"
