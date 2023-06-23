@@ -7,6 +7,7 @@
 	const netLvl = $page.params.netLvl;
 
 	let questions = [],
+		radioQuestions = [],
 		answers = [],
 		numCorrect = 0,
 		percentCorrect = 0,
@@ -19,7 +20,7 @@
 			if (netLvl == 1) {
 				getQuestion = gql`
 					query MyQuery {
-						net_1_net_questions(limit: 10) {
+						net_1_net_questions(limit: 5) {
 							question
 							questionid
 							net_answers {
@@ -121,7 +122,27 @@
 	onMount(async () => {
 		const rawData = await getQuestions();
 		questions = rawData;
+		radioQuestions = questions.map((question) => {
+			return {
+				question: question.question,
+				questionid: question.questionid,
+				answers: [...question.net_answers, ...question.net_incorrect_answers]
+			};
+		});
+
+		shuffleArray(radioQuestions);
+
+		radioQuestions.forEach((question) => {
+			shuffleArray(question.answers);
+		});
 	});
+
+	function shuffleArray(array) {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+	}
 
 	function getAnswers() {
 		const answerInputs = document.querySelectorAll('input[type="radio"]:checked');
@@ -140,9 +161,9 @@
 	}
 
 	function checkAnswers() {
-		checkedAnswers = questions.map((question) => {
-			return question.net_answers.map((answer) => {
-				if (answer.answerid == parseInt(answers[question.questionid - 1])) {
+		checkedAnswers = radioQuestions.map((question, iterable) => {
+			return question.answers.map((answer) => {
+				if (answer.answerid == answers[iterable]) {
 					numCorrect++;
 					return true;
 				} else {
@@ -165,32 +186,21 @@
 				<h1>{parseInt(percentCorrect)}%</h1>
 			{/if}
 
-			{#each questions as question}
+			{#each radioQuestions as question}
 				<div class="question">
 					<h3>{question.question}</h3>
 
-					{#each question.net_answers as answer}
+					{#each question.answers as answer}
 						<div class="answer">
 							<input
 								type="radio"
 								name={question.questionid}
-								id={answer.answerid}
-								value={answer.answerid}
+								id={!!answer.answerid ? answer.answerid : answer.incorrectanswerid}
+								value={!!answer.answerid ? answer.answerid : answer.incorrectanswerid}
+								required
 							/>
-							<label for={answer.answerid}>{answer.answer}</label>
-						</div>
-					{/each}
-
-					{#each question.net_incorrect_answers as incorrectanswer}
-						<div class="answer">
-							<input
-								type="radio"
-								name={question.questionid}
-								id={incorrectanswer.incorrectanswerid}
-								value={incorrectanswer.incorrectanswerid}
-							/>
-							<label for={incorrectanswer.incorrectanswerid}
-								>{incorrectanswer.incorrectanswer}</label
+							<label for={!!answer.answerid ? answer.answerid : answer.incorrectanswerid}
+								>{!!answer.answer ? answer.answer : answer.incorrectanswer}</label
 							>
 						</div>
 					{/each}
