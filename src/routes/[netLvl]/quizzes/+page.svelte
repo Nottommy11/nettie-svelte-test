@@ -3,11 +3,11 @@
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
 	import { page } from '$app/stores';
+	import _ from 'lodash';
 
 	const netLvl = $page.params.netLvl;
 
 	let questions = [],
-		radioQuestions = [],
 		answers = [],
 		numCorrect = 0,
 		percentCorrect = 0,
@@ -15,101 +15,112 @@
 
 	async function getQuestions() {
 		try {
-			let getQuestion;
+			const numberOfRecordsInTable = 115;
+			const numberOfRecordsForFirstArg = 5;
+			const skip = getRandomInt(numberOfRecordsInTable, numberOfRecordsForFirstArg);
+			const limit = 5;
 
 			if (netLvl == 1) {
-				getQuestion = gql`
-					query MyQuery {
-						net_1_net_questions(limit: 5) {
-							question
-							questionid
-							net_answers {
-								answer
-								answerid
-							}
-							net_incorrect_answers {
-								incorrectanswer
-								incorrectanswerid
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet1Questions($limit: Int!, $skip: Int!) {
+							net_1_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
 							}
 						}
-					}
-				`;
-
-				const myres = client.query({
-					query: getQuestion,
-					Method: 'POST'
+					`
 				});
 
 				return (await myres).data.net_1_net_questions;
 			} else if (netLvl == 2) {
-				getQuestion = gql`
-					query MyQuery {
-						net_2_net_questions(limit: 10) {
-							question
-							questionid
-							net_answers {
-								answer
-								answerid
-							}
-							net_incorrect_answers {
-								incorrectanswer
-								incorrectanswerid
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet2Questions($limit: Int!, $skip: Int!) {
+							net_2_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
 							}
 						}
-					}
-				`;
-
-				const myres = client.query({
-					query: getQuestion,
-					Method: 'POST'
+					`
 				});
 
 				return (await myres).data.net_2_net_questions;
 			} else if (netLvl == 3) {
-				getQuestion = gql`
-					query MyQuery {
-						net_3_net_questions(limit: 10) {
-							question
-							questionid
-							net_answers {
-								answer
-								answerid
-							}
-							net_incorrect_answers {
-								incorrectanswer
-								incorrectanswerid
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet3Questions($limit: Int!, $skip: Int!) {
+							net_3_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
 							}
 						}
-					}
-				`;
-
-				const myres = client.query({
-					query: getQuestion,
-					Method: 'POST'
+					`
 				});
 
 				return (await myres).data.net_3_net_questions;
 			} else if (netLvl == 4) {
-				getQuestion = gql`
-					query MyQuery {
-						net_4_net_questions(limit: 10) {
-							question
-							questionid
-							net_answers {
-								answer
-								answerid
-							}
-							net_incorrect_answers {
-								incorrectanswer
-								incorrectanswerid
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet4Questions($limit: Int!, $skip: Int!) {
+							net_4_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
 							}
 						}
-					}
-				`;
-
-				const myres = client.query({
-					query: getQuestion,
-					Method: 'POST'
+					`
 				});
 
 				return (await myres).data.net_4_net_questions;
@@ -121,8 +132,8 @@
 
 	onMount(async () => {
 		const rawData = await getQuestions();
-		questions = rawData;
-		radioQuestions = questions.map((question) => {
+
+		questions = rawData.map((question) => {
 			return {
 				question: question.question,
 				questionid: question.questionid,
@@ -130,12 +141,17 @@
 			};
 		});
 
-		shuffleArray(radioQuestions);
+		shuffleArray(questions);
 
-		radioQuestions.forEach((question) => {
+		questions.forEach((question) => {
 			shuffleArray(question.answers);
 		});
 	});
+
+	function getRandomInt(max, slice) {
+		const n = Math.floor(Math.random() * Math.floor(max)) - slice;
+		return n < 0 ? 0 : n;
+	}
 
 	function shuffleArray(array) {
 		for (let i = array.length - 1; i > 0; i--) {
@@ -161,7 +177,7 @@
 	}
 
 	function checkAnswers() {
-		checkedAnswers = radioQuestions.map((question, iterable) => {
+		checkedAnswers = questions.map((question, iterable) => {
 			return question.answers.map((answer) => {
 				if (answer.answerid == answers[iterable]) {
 					numCorrect++;
@@ -186,7 +202,7 @@
 				<h1>{parseInt(percentCorrect)}%</h1>
 			{/if}
 
-			{#each radioQuestions as question}
+			{#each questions as question}
 				<div class="question">
 					<h3>{question.question}</h3>
 
