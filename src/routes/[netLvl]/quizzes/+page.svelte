@@ -3,7 +3,6 @@
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
 	import { page } from '$app/stores';
-	import _ from 'lodash';
 
 	const netLvl = $page.params.netLvl;
 
