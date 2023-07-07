@@ -138,7 +138,9 @@
 			return {
 				question: question.question,
 				questionid: question.questionid,
-				answers: [...question.net_answers, ...question.net_incorrect_answers]
+				answers: [...question.net_answers, ...question.net_incorrect_answers],
+				correctAnswers: question.net_answers,
+				incorrectAnswers: question.net_incorrect_answers
 			};
 		});
 

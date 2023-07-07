@@ -1,1 +1,187 @@
+<script>
+	import { onMount } from 'svelte';
+	import { gql } from '@apollo/client/core';
+	import client from '../../../apollo.js';
+	import { page } from '$app/stores';
+
+	const netLvl = $page.params.netLvl;
+
+	let questions = [];
+
+	async function getQuestions() {
+		try {
+			const numberOfRecordsInTable = 115;
+			const numberOfRecordsForFirstArg = 5;
+			const skip = getRandomInt(numberOfRecordsInTable, numberOfRecordsForFirstArg);
+			const limit = 5;
+
+			if (netLvl == 1) {
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet1Questions($limit: Int!, $skip: Int!) {
+							net_1_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_1_net_questions;
+			} else if (netLvl == 2) {
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet2Questions($limit: Int!, $skip: Int!) {
+							net_2_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_2_net_questions;
+			} else if (netLvl == 3) {
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet3Questions($limit: Int!, $skip: Int!) {
+							net_3_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_3_net_questions;
+			} else if (netLvl == 4) {
+				const myres = client.query({
+					Method: 'POST',
+					variables: {
+						skip: skip,
+						limit: limit
+					},
+					query: gql`
+						query getNet4Questions($limit: Int!, $skip: Int!) {
+							net_4_net_questions(limit: $limit, offset: $skip) {
+								question
+								questionid
+								net_answers {
+									answer
+									answerid
+								}
+								net_incorrect_answers {
+									incorrectanswer
+									incorrectanswerid
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_4_net_questions;
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	onMount(async () => {
+		const rawData = await getQuestions();
+
+		questions = rawData.map((question) => {
+			return {
+				question: question.question,
+				questionid: question.questionid,
+				answers: [...question.net_answers, ...question.net_incorrect_answers],
+				correctAnswers: question.net_answers,
+				incorrectAnswers: question.net_incorrect_answers
+			};
+		});
+
+		shuffleArray(questions);
+
+		questions.forEach((question) => {
+			shuffleArray(question.answers);
+		});
+	});
+
+	function getRandomInt(max, slice) {
+		const n = Math.floor(Math.random() * Math.floor(max)) - slice;
+		return n < 0 ? 0 : n;
+	}
+
+	function shuffleArray(array) {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+	}
+</script>
+
 <h1>FLASHCARDS</h1>
+
+{#each questions as question}
+	<div class="card">
+		<div class="card-front">
+			<div class="card-question">
+				{question.question}
+			</div>
+			<div class="card-answers">
+				{#each question.answers as answer}
+					<div class="card-answer">
+						{!!answer.answer ? answer.answer : answer.incorrectanswer}
+					</div>
+				{/each}
+			</div>
+		</div>
+		<div class="card-back">
+			{#each question.answers as answer}
+				<div class="card-answer">
+					Answer:
+					{answer.answer}
+					{console.log(question)}
+				</div>
+			{/each}
+		</div>
+	</div>
+{/each}
