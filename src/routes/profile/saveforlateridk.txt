@@ -1,22 +1,23 @@
-{#if !!checkEmail(emailInput)}
-		<!-- {console.log('Email not found, you will be creating an account')} -->
-		<!-- {alert('Email not found, you will be creating an account')} -->
+async function getAccount(email) {
+		try {
+			const myres = client.query({
+				Method: 'POST',
+				query: gql`
+					query getAccount {
+						net_users_logins {
+							email
+							password
+							username
+							passwordrequired
+						}
+					}
+				`
+			});
 
-		{#if checkUsername(userInput)}
-			<!-- {console.log('Username already exists, please choose another')} -->
-			<!-- {alert('Username already exists, please choose another')} -->
-		{:else}
-			{addAccount(emailInput, userInput)}
-		{/if}
-
-		{#if checkPassword(emailInput, userInput, passInput)}
-			<!-- {alert('Incorrect password')} -->
-			<!-- {console.log('Incorrect password')} -->
-		{:else}
-			<!-- {console.log('Login successful')} -->
-			{alert('Login successful')}
-		{/if}
-	{:else}
-		<!-- {console.log('Login successful')} -->
-		{alert('Login successful')}
-	{/if}
+			accounts = (await myres).data;
+			console.log(accounts.net_users_logins[1].email)
+			return accounts;
+		} catch (err) {
+			console.log(err);
+		}
+	}
