@@ -1,135 +1,62 @@
 <script>
 	import { gql } from '@apollo/client/core';
 	import client from '../../apollo.js';
-	import { mutation } from 'svelte-apollo';
+	import { goto } from '$app/navigation';
 
 	let emailInput = '',
-		usernameInput = '',
-		passwordInput = '';
+		userInput = '',
+		passInput = '';
 
-	let noAccountForEmail = false,
-		emailExists = false,
-		usernameExists = false,
-		passwordRequired = false;
+	let passwordRequired = false,
+		newAccount = false;
 
-	async function checkEmail(email) {
+	async function getAccount() {
+		//gets the account that matches emailInput from the user
 		try {
 			const myres = client.query({
 				Method: 'POST',
 				variables: {
-					email: email
+					email: emailInput
 				},
 				query: gql`
-					query checkEmail($email: citext!) {
+					query getAccount($email: citext!) {
 						net_users_logins(where: { email: { _eq: $email } }) {
 							username
 							passwordrequired
-						}
-					}
-				`
-			});
-
-			const emailRes = (await myres).data.net_users_logins[0];
-
-			if (emailRes) {
-				noAccountForEmail = false;
-				emailExists = true;
-				emailRes.passwordrequired && (passwordRequired = true);
-			} else {
-				noAccountForEmail = true;
-				emailExists = false;
-				passwordRequired = false;
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}
-
-	async function checkUsername(username) {
-		try {
-			const myres = client.query({
-				Method: 'POST',
-				variables: {
-					username: username
-				},
-				query: gql`
-					query checkForUsername($username: name!) {
-						net_users_logins(where: { username: { _eq: $username } }) {
-							username
-						}
-					}
-				`
-			});
-
-			const usernameRes = (await myres).data.net_users_logins[0];
-
-			if (usernameRes) {
-				usernameExists = true;
-			} else {
-				usernameExists = false;
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}
-
-	async function checkPassword(email, password) {
-		try {
-			const myres = client.query({
-				Method: 'POST',
-				variables: {
-					email: email,
-					password: password
-				},
-				query: gql`
-					query checkForLogin($email: citext!, $password: String!) {
-						net_users_logins(
-							where: { _and: [{ email: { _eq: $email } }, { password: { _eq: $password } }] }
-						) {
 							loginid
-							username
 						}
 					}
 				`
 			});
 
-			const loginRes = (await myres).data.net_users_logins[0];
+			const account = (await myres).data.net_users_logins[0];
+			// console.log(account);
 
-			if (loginRes) {
-				console.log('login successful');
+			if (account == undefined) {
+				//if the account doesn't exist create a new account
+				console.log('Create new account');
+				newAccount = true; //this makes it so the username textbox shows up
+			} else if (account.passwordrequired == false) {
+				//if it doesn't require a password
+				console.log('signed in!');
+				goto(`/profile/${account.loginid}`); //goes to their profile with the loginid
 			} else {
-				console.log('login failed');
+				//if it requires a password
+				passwordRequired = true; //makes the password textbox show up
 			}
 		} catch (err) {
 			console.log(err);
 		}
 	}
 
-	async function handleLogin(email) {
+	async function addAccount() {
+		//adds a new account if the emailInput is not found in getAccount and if the username the user inputed is not already used
 		try {
-			await checkEmail(email);
-
-			if (emailExists && !passwordRequired) {
-				console.log('login successful');
-			} else {
-				console.log('login failed');
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}
-
-	async function addAccount(email, username) {
-		try {
-			if (usernameExists) {
-				return;
-			}
-
 			const myres = client.mutate({
 				Method: 'POST',
 				variables: {
-					email: email,
-					username: username
+					email: emailInput,
+					username: userInput
 				},
 				mutation: gql`
 					mutation addAccount($email: citext!, $username: name!) {
@@ -145,10 +72,76 @@
 
 			const addAccountRes = (await myres).data.insert_net_users_logins.returning[0];
 
+			//if adding the account was successful
 			if (addAccountRes) {
 				console.log('account created');
+				goto(`/profile/${addAccountRes.loginid}`); //goes to their profile with the loginid
 			} else {
 				console.log('account creation failed');
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	async function checkUsername() {
+		//checks to see if the userInput is already used by a different account
+		try {
+			const myres = client.query({
+				Method: 'POST',
+				variables: {
+					username: userInput
+				},
+				query: gql`
+					query checkForUsername($username: name!) {
+						net_users_logins(where: { username: { _eq: $username } }) {
+							username
+							loginid
+						}
+					}
+				`
+			});
+
+			const usernameRes = (await myres).data.net_users_logins[0];
+
+			if (usernameRes) {
+				//if there was an account found don't add new account
+				console.log('Username already exists');
+			} else {
+				//if there wasn't an account found addAccount
+				addAccount();
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	async function checkPassword() {
+		try {
+			const myres = client.query({
+				Method: 'POST',
+				variables: {
+					email: emailInput
+				},
+				query: gql`
+					query getAccount($email: citext!) {
+						net_users_logins(where: { email: { _eq: $email } }) {
+							password
+							loginid
+						}
+					}
+				`
+			});
+
+			const account = (await myres).data.net_users_logins[0];
+			// console.log(account);
+			
+			if (account.password == passInput) {
+				//if the password is correct
+				console.log('signed in!');
+				goto(`/profile/${account.loginid}`); //goes to their profile with the loginid
+			} else {
+				console.log('incorrect password');
 			}
 		} catch (err) {
 			console.log(err);
@@ -157,36 +150,21 @@
 </script>
 
 <h1>Login Page</h1>
-
 <form>
-	<h1>Enter Your Email</h1>
-	<label for="email">Email</label>
-	<input
-		for="email"
-		type="email"
-		bind:value={emailInput}
-		on:change={() => {
-			emailInput.includes('@') && emailInput.includes('.') && checkEmail(emailInput);
-		}}
-	/>
-
+	<div>
+		<label for="emailInput">Email:</label>
+		<input type="email" id="emailInput" required bind:value={emailInput} on:change={getAccount} />
+	</div>
+	{#if newAccount}
+		<div>
+			<label for="userInput">Username:</label>
+			<input type="text" id="userInput" required bind:value={userInput} on:change={checkUsername} />
+		</div>
+	{/if}
 	{#if passwordRequired}
-		<label for="password">Password</label>
-		<input for="password" type="password" bind:value={passwordInput} />
-		<button on:click={checkPassword(emailInput, passwordInput)}> Login </button>
-	{:else if noAccountForEmail}
-		<label for="username">Username</label>
-		<input
-			for="username"
-			type="text"
-			bind:value={usernameInput}
-			on:change={checkUsername(usernameInput)}
-		/>
-		{#if usernameExists}
-			<p>Username already exists</p>
-		{/if}
-		<button on:click={addAccount(emailInput, usernameInput)}>Create Account</button>
-	{:else if emailExists && !passwordRequired}
-		<button on:click={handleLogin(emailInput)}>Login</button>
+		<div>
+			<label for="passInput">Password:</label>
+			<input type="password" id="passInput" bind:value={passInput} on:change={checkPassword} />
+		</div>
 	{/if}
 </form>
