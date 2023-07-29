@@ -3,6 +3,7 @@
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
 	import { page } from '$app/stores';
+	import Flashcard from './Flashcard.svelte';
 
 	const netLvl = $page.params.netLvl;
 
@@ -132,9 +133,9 @@
 			return {
 				question: question.question,
 				questionid: question.questionid,
-				answers: [...question.net_answers, ...question.net_incorrect_answers],
 				correctAnswers: question.net_answers,
-				incorrectAnswers: question.net_incorrect_answers
+				incorrectAnswers: question.net_incorrect_answers,
+				answers: [...question.net_answers, ...question.net_incorrect_answers]
 			};
 		});
 
@@ -143,6 +144,8 @@
 		questions.forEach((question) => {
 			shuffleArray(question.answers);
 		});
+
+		console.log(questions);
 	});
 
 	function getRandomInt(max, slice) {
@@ -156,32 +159,74 @@
 			[array[i], array[j]] = [array[j], array[i]];
 		}
 	}
+
+	let flashcardIndex = 0;
+
+	let showCardBack = false;
+	const toggleShowBack = () => (showCardBack = !showCardBack);
+
+	const prevCard = () => {
+		showCardBack = false;
+		if (flashcardIndex === 0) {
+			flashcardIndex = questions.length - 1;
+		} else {
+			flashcardIndex -= 1;
+		}
+	};
+
+	const nextCard = () => {
+		showCardBack = false;
+		if (flashcardIndex === questions.length - 1) {
+			flashcardIndex = 0;
+		} else {
+			flashcardIndex += 1;
+		}
+	};
 </script>
 
 <h1>FLASHCARDS</h1>
 
-{#each questions as question}
-	<div class="card">
-		<div class="card-front">
-			<div class="card-question">
-				{question.question}
-			</div>
-			<div class="card-answers">
-				{#each question.answers as answer}
-					<div class="card-answer">
-						{!!answer.answer ? answer.answer : answer.incorrectanswer}
-					</div>
-				{/each}
-			</div>
-		</div>
-		<div class="card-back">
-			{#each question.answers as answer}
-				<div class="card-answer">
-					Answer:
-					{answer.answer}
-					{console.log(question)}
-				</div>
-			{/each}
-		</div>
+<div class="flashcard-container">
+	<button on:click={prevCard}>Prev</button>
+	<div
+		class="flashcard-card"
+		class:flip-it={showCardBack}
+		on:click={toggleShowBack}
+		on:keydown={(key) => key.key() === 'SPACE'}
+	>
+		{#if questions.length > 0}
+			<Flashcard
+				question={questions[flashcardIndex].question}
+				answers={questions[flashcardIndex].answers}
+				{showCardBack}
+			/>
+		{/if}
 	</div>
-{/each}
+	<button on:click={nextCard}>Next</button>
+</div>
+
+<style>
+	.flashcard-container {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		width: 100vw;
+		height: 100vh;
+		perspective: 1000px; /* Remove this if you don't want the 3D effect */
+	}
+
+	.flashcard-card {
+		position: relative;
+		width: 50%;
+		height: 50%;
+		text-align: center;
+		transform-style: preserve-3d;
+	}
+
+	/* Do an horizontal flip on button click */
+	.flip-it {
+		transition: transform 0.4s;
+		transform: rotateY(180deg);
+	}
+</style>
