@@ -12,9 +12,77 @@
 		percentCorrect = 0,
 		checkedAnswers = [];
 
+	async function getQuestionsCount() {
+		try {
+			if (netLvl == 1) {
+				const myres = client.query({
+					Method: 'POST',
+					query: gql`
+						query getNet1QuestionsCount {
+							net_1_net_questions_aggregate {
+								aggregate {
+									count
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_1_net_questions_aggregate.aggregate.count;
+			} else if (netLvl == 2) {
+				const myres = client.query({
+					Method: 'POST',
+					query: gql`
+						query getNet2QuestionsCount {
+							net_2_net_questions_aggregate {
+								aggregate {
+									count
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_2_net_questions_aggregate.aggregate.count;
+			} else if (netLvl == 3) {
+				const myres = client.query({
+					Method: 'POST',
+					query: gql`
+						query getNet3QuestionsCount {
+							net_3_net_questions_aggregate {
+								aggregate {
+									count
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_3_net_questions_aggregate.aggregate.count;
+			} else if (netLvl == 5) {
+				const myres = client.query({
+					Method: 'POST',
+					query: gql`
+						query getNet4QuestionsCount {
+							net_4_net_questions_aggregate {
+								aggregate {
+									count
+								}
+							}
+						}
+					`
+				});
+
+				return (await myres).data.net_4_net_questions_aggregate.aggregate.count;
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
 	async function getQuestions() {
 		try {
-			const numberOfRecordsInTable = 115;
+			const numberOfRecordsInTable = await getQuestionsCount();
 			const numberOfRecordsForFirstArg = 5;
 			const skip = getRandomInt(numberOfRecordsInTable, numberOfRecordsForFirstArg);
 			const limit = 5;

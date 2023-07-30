@@ -1,9 +1,6 @@
 <script>
 	export let question;
 	export let answers;
-	export let showCardBack;
-
-	console.log(question, answers, showCardBack);
 </script>
 
 <div class="flip-box-front">
@@ -15,7 +12,7 @@
 	</div>
 </div>
 
-<div class="flip-box-back" class:conceal-answer={showCardBack}>
+<div class="flip-box-back">
 	{#each answers as answer}
 		{#if !!answer.answer}
 			<h2>{answer.answer}</h2>
