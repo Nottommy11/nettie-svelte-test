@@ -135,7 +135,7 @@
 
 			const account = (await myres).data.net_users_logins[0];
 			// console.log(account);
-			
+
 			if (account.password == passInput) {
 				//if the password is correct
 				console.log('signed in!');
@@ -149,8 +149,8 @@
 	}
 </script>
 
-<h1>Login Page</h1>
-<form>
+<div class="center">
+	<h1>Login Page</h1>
 	<div>
 		<label for="emailInput">Email:</label>
 		<input type="email" id="emailInput" required bind:value={emailInput} on:change={getAccount} />
@@ -167,4 +167,13 @@
 			<input type="password" id="passInput" bind:value={passInput} on:change={checkPassword} />
 		</div>
 	{/if}
-</form>
+</div>
+
+<style>
+	.center {
+		margin: auto;
+		width: 50%;
+		padding: 15px;
+		text-align: center;
+	}
+</style>
