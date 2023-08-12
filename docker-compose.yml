@@ -1,3 +1,11 @@
+# Add version revisions to this comment when making a push.
+# Add a comment to this line when making a push describing the changes made.
+# 0 Represents the production version of the application.
+# 0.0 Represents the development version of the application. Any major changes made to the application.
+# 0.0.0 Represents any minor changes made to the application. A final push to a branch. A bug fix or patch.
+# 0.0.0.0 Represents any insignificant changes made to the application. A change to a comment or a README file.
+# 0.0.0.1 - Initial inclusion of versioning
+
 services:
   nodeserver:
     build:
@@ -41,4 +49,3 @@ services:
 
 volumes:
   certs:
-  
