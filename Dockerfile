@@ -11,7 +11,6 @@ RUN npm ci
 COPY . .
 # Clean CI
 RUN npm cache clean --force
-RUN npm install
 RUN unset CI
 # build the application
 RUN npm run build
