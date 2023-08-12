@@ -1,6 +1,6 @@
 ### Build Step
 # pull the Node.js Docker image
-FROM node:16.2 as builder
+FROM node:19.5.0 as builder
 # change working directory
 WORKDIR /usr/src/app
 # copy the package.json files from local machine to the workdir in container
@@ -16,7 +16,7 @@ RUN unset CI
 RUN npm run build
 ### Serve Step
 # pull the Node.js Docker image
-FROM node:16.2.0-alpine3.13
+FROM node:19.5.0
 # change working directory
 WORKDIR /app
 # copy files from previous step
