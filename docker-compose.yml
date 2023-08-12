@@ -14,7 +14,7 @@ services:
     build:
       context: ./nginx
     volumes:
-      - certs:/etc/nginx/certs/:ro
+      - certs:/etc/nginx/certs:ro
       - /etc/nginx/vhost.d
       - /etc/acme.sh
       - /usr/share/nginx/html
