@@ -3,6 +3,7 @@
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
 	import { page } from '$app/stores';
+	import Admin from './Admin.svelte';
 
 	const loginID = $page.params.profileid;
 
@@ -68,6 +69,7 @@
 
 {#if isAdmin}
 	<h2>Admin</h2>
+	<Admin />
 {:else}
 	<h2>Not Admin</h2>
 {/if}
