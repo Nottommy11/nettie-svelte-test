@@ -9,6 +9,10 @@ COPY package*.json ./
 RUN npm ci
 # copy the generated modules and all other files to the container
 COPY . .
+# Clean CI
+RUN npm cache clean --force
+RUN npm install
+RUN unset CI
 # build the application
 RUN npm run build
 ### Serve Step
