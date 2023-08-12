@@ -84,6 +84,8 @@ This will include information about how I would like this project to look and pe
 
 This section outlines the commands I use to run this project.
 
+- `nvm` This can be used to manage which version of npm is being used. This 
+
 - `npm install` - Installs the dependencies for this project.
 
 - `npm run dev` - Runs a local version of the app
