@@ -112,8 +112,6 @@
 					`
 				});
 
-				console.log('here');
-
 				return (await myres).data.net_1_net_questions;
 			} else if (netLvl == 2) {
 				const myres = client.query({

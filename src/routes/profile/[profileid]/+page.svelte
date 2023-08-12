@@ -6,6 +6,32 @@
 
 	const loginID = $page.params.profileid;
 
+	let isAdmin = false;
+
+	async function checkForAdmin() {
+		try {
+			const myres = client.query({
+				Method: 'POST',
+				variables: {
+					loginid: loginID
+				},
+				query: gql`
+					query checkAccountForAdmin($loginid: uuid!) {
+						net_users_logins(where: { loginid: { _eq: $loginid } }) {
+							passwordrequired
+						}
+					}
+				`
+			});
+
+			const myresWhy = await myres;
+
+			return await myresWhy.data.net_users_logins[0].passwordrequired;
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
 	let username = '';
 
 	async function getUsername() {
@@ -34,7 +60,14 @@
 
 	onMount(async () => {
 		username = await getUsername();
+		isAdmin = await checkForAdmin();
 	});
 </script>
 
 <h1>Hello {username}</h1>
+
+{#if isAdmin}
+	<h2>Admin</h2>
+{:else}
+	<h2>Not Admin</h2>
+{/if}
