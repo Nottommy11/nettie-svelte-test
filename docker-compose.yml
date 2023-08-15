@@ -1,0 +1,51 @@
+# Add version revisions to this comment when making a push.
+# Add a comment to this line when making a push describing the changes made.
+# 0 Represents the production version of the application.
+# 0.0 Represents the development version of the application. Any major changes made to the application.
+# 0.0.0 Represents any minor changes made to the application. A final push to a branch. A bug fix or patch.
+# 0.0.0.0 Represents any insignificant changes made to the application. A change to a comment or a README file.
+# 0.0.0.1 - Initial inclusion of versioning
+
+services:
+  nodeserver:
+    build:
+      context: .
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+  nginx-proxy:
+    container_name: nginx-proxy
+    build:
+      context: ./nginx
+    volumes:
+      - certs:/etc/nginx/certs:ro
+      - /etc/nginx/vhost.d
+      - /etc/acme.sh
+      - /usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+      - '80:80'
+      - '443:443'
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: ''
+    restart: unless-stopped
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    environment:
+      NGINX_DOCKER_GEN_CONTAINER: nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes_from:
+      - nginx-proxy
+    restart: unless-stopped
+    depends_on:
+      - nginx-proxy
+
+volumes:
+  certs:

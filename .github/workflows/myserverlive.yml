@@ -1,0 +1,25 @@
+name: Home Server Live Deployment
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Create .env
+        run: echo 'VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }}' >> .env && echo 'LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}' >> .env && echo 'VIRTUAL_PORT=${{ secrets.VIRTUAL_PORT }}' >> .env
+
+      - name: stop running containers
+        run: docker-compose down
+
+      - name: Run all containers
+        run: docker-compose up --build -d
+
+      - name: cleanup
+        run: rm .env
