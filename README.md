@@ -1,10 +1,11 @@
 # Nettie, A Networking Game
 
- This project is a gamification of concepts from the Networking I, II, III, & IV classes at Wayne State College.
+This project is a gamification of concepts from the Networking I, II, III, & IV classes at Wayne State College.
 
- Check out the [current deployment!][Deployment]
+Check out the [current deployment!][Deployment]
 
 ---
+
 ## Outline
 
 - [Nettie, A Networking Game](#nettie-a-networking-game)
@@ -14,9 +15,11 @@
 		- [Assigned Tasks](#assigned-tasks)
 		- [Hopes \& Dreams](#hopes--dreams)
 		- [Further Documentation](#further-documentation)
-			- [Commands](#commands)
-			- [Dependencies](#dependencies)
-			- [Visual Studio Code Extensions](#visual-studio-code-extensions)
+		- [Commands](#commands)
+		- [Dependencies](#dependencies)
+		- [Useful Resources](#useful-resources)
+			- [Profile Page](#profile-page)
+		- [Visual Studio Code Extensions](#visual-studio-code-extensions)
 
 ---
 
@@ -79,26 +82,44 @@ This section outlines what I hope to get to with this project.
 
 This will include information about how I would like this project to look and perhaps some resources that helped me along the way.
 
-#### Commands
+---
+
+### Commands
 <div name="commands"/>
 
 This section outlines the commands I use to run this project.
 
-- `nvm` This can be used to manage which version of npm is being used. This 
+- `nvm` This can be used to manage which version of npm is being used. This can be installed [here][nvm].
+
+- `nvm install 19.5.0` Run this before running any of the following commands.
+
+- `nvm use 19.5.0` Run this before running any of the following commands.
+
+- `npm -v` Check npm version, verify you're on 19.5.0
 
 - `npm install` - Installs the dependencies for this project.
 
 - `npm run dev` - Runs a local version of the app
+ 
+---
 
-#### Dependencies
+### Dependencies
 <div name="dependencies"/>
 
 This section outlines the dependencies I use for this project and the command used to install them. They should also be included in the `package.json` file.
 
 YOU DON'T NEED TO ENTER THESE COMMANDS. `npm install` should install them for you.
 
+---
 
-#### Visual Studio Code Extensions
+### Useful Resources
+<div name="resources"/>
+
+#### Profile Page
+
+---
+
+### Visual Studio Code Extensions
 <div name="vscode-extensions"/>
 
 This section outlines the extensions I use for this project. These are very helpful for web-development.
@@ -141,3 +162,4 @@ This section outlines the extensions I use for this project. These are very help
 
 [Deployment]: https://www.wscnettie.com
 [GitHubEducation]: https://education.github.com/pack
+[nvm]: https://github.com/coreybutler/nvm-windows/releases
