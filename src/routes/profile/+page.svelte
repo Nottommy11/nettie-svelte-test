@@ -21,7 +21,6 @@
 				query: gql`
 					query getAccount($email: citext!) {
 						net_users_logins(where: { email: { _eq: $email } }) {
-							username
 							passwordrequired
 							loginid
 						}
@@ -93,7 +92,7 @@
 					username: userInput
 				},
 				query: gql`
-					query checkForUsername($username: name!) {
+					query checkUsername($username: name!) {
 						net_users_logins(where: { username: { _eq: $username } }) {
 							username
 							loginid
@@ -124,7 +123,7 @@
 					email: emailInput
 				},
 				query: gql`
-					query getAccount($email: citext!) {
+					query checkPassword($email: citext!) {
 						net_users_logins(where: { email: { _eq: $email } }) {
 							password
 							loginid
