@@ -28,19 +28,17 @@
 			});
 
 			const account = (await myres).data.net_users_logins[0];
-			// console.log(account);
 
 			if (account == undefined) {
 				//if the account doesn't exist create a new account
 				console.log("Account doesn't exist");
-				goto('/signup');
 			} else if (account.passwordrequired == false) {
 				//if it doesn't require a password
 				correctEmail = true;
 				correctPassword = true;
 			} else {
 				//if it requires a password
-                correctEmail = true;
+				correctEmail = true;
 				passwordRequired = true; //makes the password textbox show up
 			}
 		} catch (err) {
@@ -70,7 +68,7 @@
 			if (account.password == passInput) {
 				//if the password is correct
 				correctPassword = true;
-                console.log('correct password')
+				console.log('correct password');
 			} else {
 				console.log('incorrect password');
 				correctPassword = false;
@@ -117,7 +115,14 @@
 	<h1>Login Page</h1>
 	<div>
 		<label for="emailInput">Email:</label>
-		<input type="email" id="emailInput" required bind:value={emailInput} on:change={checkEmail} placeholder="example@gmail.com"/>
+		<input
+			type="email"
+			id="emailInput"
+			required
+			bind:value={emailInput}
+			on:change={checkEmail}
+			placeholder="example@gmail.com"
+		/>
 	</div>
 	{#if passwordRequired}
 		<div>
@@ -126,9 +131,9 @@
 		</div>
 	{/if}
 	<button on:click={login}>Login</button>
-    <div>
-        Don't have an account? <a href="/signup">Sign up</a>
-    </div>
+	<div>
+		Don't have an account? <a href="/signup">Sign up</a>
+	</div>
 </div>
 
 <style>
