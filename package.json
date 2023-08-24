@@ -32,6 +32,8 @@
 		"lodash": "^4.17.21",
 		"react-icons": "^4.10.1",
 		"svelte-apollo": "^0.5.0",
-		"svelte-icons-pack": "^2.1.0"
+		"svelte-icons-pack": "^2.1.0",
+		"svelte-notifications": "^0.9.98",
+		"xlsx": "^0.18.5"
 	}
 }
