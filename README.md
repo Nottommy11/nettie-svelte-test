@@ -17,8 +17,6 @@ Check out the [current deployment!][Deployment]
 		- [Further Documentation](#further-documentation)
 		- [Commands](#commands)
 		- [Dependencies](#dependencies)
-		- [Useful Resources](#useful-resources)
-			- [Profile Page](#profile-page)
 		- [Visual Studio Code Extensions](#visual-studio-code-extensions)
 
 ---
@@ -110,19 +108,6 @@ This section outlines the dependencies I use for this project and the command us
 
 YOU DON'T NEED TO ENTER THESE COMMANDS. `npm install` should install them for you.
 
----
-
-### Useful Resources
-<div name="resources"/>
-
-#### Profile Page
-https://www.youtube.com/watch?v=Y86k1Is45Uo - Svelte Login using Access & Refresh Tokens
-https://www.youtube.com/watch?v=HzB5wvU6A_E - Svelte | #authentication using JWT , Cookies and Hooks.server!!
-https://www.youtube.com/watch?v=vVM1Tpu9QB4 - ID Tokens VS Access Tokens: What's the Difference?
-https://auth0.com/blog/id-token-access-token-what-is-the-difference/
-https://www.youtube.com/watch?v=h6wBYWWdyYQ - Authentication: It’s Easier Than You Think
-https://www.youtube.com/watch?v=bG7cxwBMVag - SvelteKit Session Authentication Using Cookies
-https://www.youtube.com/watch?v=eDx9igpmRqM - Svelte JWT Authentication
 ---
 
 ### Visual Studio Code Extensions
