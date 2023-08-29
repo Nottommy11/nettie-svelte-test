@@ -3,14 +3,22 @@
 	import { gql } from '@apollo/client/core';
 	import client from '../../../apollo.js';
 
+	import { downloadCSV, downloadExcel, downloadJSON } from './Functions/DownloadOptions.js';
+	import { uploadCSV, uploadExcel, uploadJSON } from './Functions/UploadOptions.js';
+
+	import { notifications } from '../../notifications.js';
+	import Toast from '../../Toast.svelte';
+
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import RiSystemArrowDropDownLine from 'svelte-icons-pack/ri/RiSystemArrowDropDownLine';
+	import AiOutlineDelete from 'svelte-icons-pack/ai/AiOutlineDelete';
+	import AiOutlinePlus from 'svelte-icons-pack/ai/AiOutlinePlus';
 
 	let activeNetLvl = 1,
 		activeFilter = {},
 		activeSort = 'question',
 		activeSortDir = 'asc',
-		sortedQuestions = [];
+		queryQuestions = [];
 
 	// Call the query anytime one of these variables change
 	$: activeNetLvl,
@@ -18,8 +26,6 @@
 		activeSort,
 		activeSortDir,
 		getQuestions(activeNetLvl, activeFilter, activeSort, activeSortDir);
-
-	// Get questions based on selection
 
 	async function getQuestions(netLvl, filter, sort, sortDir) {
 		try {
@@ -61,18 +67,18 @@
 				? (orderByClause = `order_by: [${orderByClause.join(',')}]`)
 				: (orderByClause = null);
 
-			if (filter.question) {
+			if (!!filter.question) {
 				whereClause.push(`question: {_ilike: "%${filter.question}%"}`);
 			}
-			if (filter.correct) {
+			if (!!filter.correct) {
 				whereClause.push(`net_answers_aggregate: {count: {predicate: {_eq: ${filter.correct}}}}`);
 			}
-			if (filter.incorrect) {
+			if (!!filter.incorrect) {
 				whereClause.push(
 					`net_incorrect_answers_aggregate: {count: {predicate: {_eq: ${filter.incorrect}}}}`
 				);
 			}
-			if (filter.images) {
+			if (!!filter.images) {
 				whereClause.push(`net_images_aggregate: {count: {predicate: {_eq: ${filter.correct}}}}`);
 			}
 
@@ -107,8 +113,43 @@
 					`
 			});
 
-			sortedQuestions = (await myres).data[`net_${netLvl}_net_questions`];
+			queryQuestions = (await myres).data[`net_${netLvl}_net_questions`];
 		} catch (err) {
+			notifications.danger('Error getting questions, check logs!', 5000);
+			console.log(err);
+		}
+	}
+
+	function saveQuestionChanges(input) {
+		try {
+			const myres = client.mutate({
+				Method: 'POST',
+				mutation: gql`
+				mutation update${activeNetLvl}Question($questionid: uuid!, $question: String!) {
+					update_net_${activeNetLvl}_net_questions(
+						where: { questionid: { _eq: $questionid } }
+						_set: { question: $question }
+					) {
+						affected_rows
+					}
+				}
+			`,
+				variables: {
+					questionid: input.questionid,
+					question: input.question
+				}
+			});
+
+			myres
+				.then(() => {
+					notifications.success('Question updated successfully', 3000);
+				})
+				.catch((err) => {
+					notifications.error('Error updating question, check logs!', 5000);
+					console.log(err);
+				});
+		} catch (err) {
+			notifications.danger('Error updating question, check logs!', 5000);
 			console.log(err);
 		}
 	}
@@ -118,11 +159,63 @@
 	});
 </script>
 
+<Toast />
+
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="download-container">
+	<div class="download-btn" on:click={() => downloadExcel(activeNetLvl, activeFilter)}>
+		Download Excel
+	</div>
+	<div class="download-btn" on:click={() => downloadCSV(activeNetLvl, activeFilter)}>
+		Download CSV
+	</div>
+
+	<div class="download-btn" on:click={() => downloadJSON(activeNetLvl, activeFilter)}>
+		Download JSON
+	</div>
+</div>
+
+<div class="upload-conatiner">
+	<div class="upload-btn">
+		Upload Excel
+		<input
+			type="file"
+			id="file"
+			accept=".xlsx, .xls"
+			on:change={(e) => {
+				uploadExcel(e.target.files[0]).then(() => {
+					getQuestions(activeNetLvl, activeFilter, activeSort, activeSortDir);
+				});
+			}}
+		/>
+	</div>
+	<div class="upload-btn">
+		Upload CSV
+		<input
+			type="file"
+			id="file"
+			accept=".csv"
+			on:change={(e) => {
+				uploadCSV(e.target.value);
+			}}
+		/>
+	</div>
+	<div class="upload-btn">
+		Upload JSON
+		<input
+			type="file"
+			id="file"
+			accept=".json"
+			on:change={(e) => {
+				uploadJSON(e.target.value);
+			}}
+		/>
+	</div>
+</div>
+
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="lvl-dropdown">
-	<div class="lvl-dropdown-btn">
-		<div class="lvl-dropdown-btn-text">Select Net Lvl</div>
-	</div>
+	<div class="lvl-dropdown-btn">Select Net Lvl</div>
 	<div class="lvl-dropdown-content">
 		<div
 			on:click={() => {
@@ -209,8 +302,8 @@
 	<div class="table">
 		<div class="table-head">
 			<div class="table-head-row">
-				<div id="expand-header" class="table-head-item">Expand</div>
-				<div id="question-header" class="table-head-item">
+				<div id="expand-header" class="table-head-item expand-column">Expand</div>
+				<div id="question-header" class="table-head-item question-column">
 					Question
 					<div
 						id="question-sort"
@@ -244,7 +337,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="correct-header" class="table-head-item">
+				<div id="correct-header" class="table-head-item correct-column">
 					Num Correct
 					<div
 						id="correct-sort"
@@ -278,7 +371,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="incorrect-header" class="table-head-item">
+				<div id="incorrect-header" class="table-head-item incorrect-column">
 					Num Incorrect
 					<div
 						id="incorrect-sort"
@@ -312,7 +405,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="images-header" class="table-head-item">
+				<div id="images-header" class="table-head-item images-column">
 					Num Images
 					<div
 						id="images-sort"
@@ -346,41 +439,75 @@
 						</div>
 					</div>
 				</div>
+				<div id="delete-header" class="table-head-item delete-column">Delete</div>
 			</div>
 		</div>
 		<div class="table-body">
-			{#each sortedQuestions as question}
+			{#each queryQuestions as question}
 				<div class="table-row">
 					<div class="table-item expand-column" />
-					<div class="table-item question-column">{question.question}</div>
+					<textarea
+						class="table-item question-column"
+						value={question.question}
+						on:change={(e) => {
+							saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
+						}}
+					/>
 					<div class="table-item correct-column">{question.net_answers.length}</div>
 					<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
-					<div class="table-item images-column">question.images.length</div>
+					<div class="table-item images-column">10</div>
+					<div class="table-item delete-column">
+						<div class="settings-button">
+							<Icon src={AiOutlineDelete} />
+						</div>
+					</div>
 				</div>
 			{/each}
+			<div class="add-table-row">
+				<Icon src={AiOutlinePlus} />
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
+	textarea {
+		all: unset;
+	}
+
+	.download-container {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.download-btn {
+		background-color: #000;
+		border: 1px solid #fff;
+		border-radius: 10%;
+		padding: 0.5rem;
+		cursor: pointer;
+	}
+
 	.table-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		width: 100%;
 		color: #000;
+		padding: 4rem;
 	}
 
 	.table {
 		display: flex;
 		flex-direction: column;
-		width: 95%;
+		width: 100%;
 		background-color: #fff;
 		border: 2px solid #000;
 	}
 
 	.table-head {
-		border: 2px solid #000;
 		width: 100%;
 		font-size: 1.5rem;
 	}
@@ -396,21 +523,14 @@
 		display: flex;
 		align-items: center;
 		flex-direction: row;
-		font-size: 1.5rem;
-		width: 20%;
-		height: 100%;
 		justify-content: space-evenly;
 		border-left: 1px solid #000;
-	}
-
-	#expand-header {
-		border-left: 0px;
 	}
 
 	.table-sort {
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: center;
 		font-size: 2rem;
 		margin-top: 0.5rem;
 		margin-bottom: 0.5rem;
@@ -442,7 +562,7 @@
 	.table-row {
 		display: flex;
 		flex-direction: row;
-		width: 100%;
+		height: 7rem;
 		border-top: 1px solid #000;
 	}
 
@@ -450,11 +570,48 @@
 		display: flex;
 		align-items: center;
 		flex-direction: row;
+		justify-content: center;
 		font-size: 1.5rem;
-		width: 20%;
-		height: 100%;
-		justify-content: space-evenly;
 		border-left: 1px solid #000;
 		padding: 0.5rem;
+	}
+
+	.expand-column {
+		border-left: 0px;
+		width: 10%;
+	}
+
+	.question-column {
+		border-right: 0px;
+		width: 45%;
+	}
+
+	.correct-column {
+		border-right: 0px;
+		width: 15%;
+	}
+
+	.incorrect-column {
+		border-right: 0px;
+		width: 15%;
+	}
+
+	.images-column {
+		border-right: 0px;
+		width: 15%;
+	}
+
+	.delete-column {
+		border-right: 0px;
+		width: 10%;
+	}
+	.add-table-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		border-top: 2px solid #000;
+		font-size: 3rem;
+		padding: 2rem;
 	}
 </style>
