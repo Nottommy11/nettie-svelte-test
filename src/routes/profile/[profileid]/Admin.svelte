@@ -104,6 +104,10 @@
 									answer
 									answerid
 								}
+								net_correct_answers {
+									correctanswer
+									correctanswerid
+								}
 								net_incorrect_answers {
 									incorrectanswer
 									incorrectanswerid
@@ -120,7 +124,76 @@
 		}
 	}
 
-	function saveQuestionChanges(input) {
+	async function addQuestion() {
+		try {
+			const myres = client.mutate({
+				Method: 'POST',
+				mutation: gql`
+				mutation add${activeNetLvl}Question($question: String!) {
+					insert_net_${activeNetLvl}_net_questions(objects: { question: $question }) {
+						affected_rows
+					}
+				}
+			`,
+				variables: {
+					question: ''
+				}
+			});
+
+			myres
+				.then(() => {
+					notifications.success('Question added successfully', 3000);
+					getQuestions(activeNetLvl, activeFilter, activeSort, activeSortDir);
+				})
+				.catch((err) => {
+					notifications.danger('Error adding question, check logs!', 5000);
+					console.log(err);
+				});
+		} catch (err) {
+			notifications.danger('Error adding question, check logs!', 5000);
+			console.log(err);
+		}
+	}
+
+	async function deleteQuestion(question) {
+		try {
+			const deleteAnswers = `delete_net_${activeNetLvl}_net_answers(where: { questionid: { _eq: "${question.questionid}" } })`;
+			const deleteIncorrectAnswers = `delete_net_${activeNetLvl}_net_incorrect_answers(where: { questionid: { _eq: "${question.questionid}" } })`;
+			const deleteCorrectAnswers = `delete_net_${activeNetLvl}_net_correct_answers(where: { questionid: { _eq: "${question.questionid}" } })`;
+
+			const myres = client.mutate({
+				Method: 'POST',
+				mutation: gql`
+				mutation delete${activeNetLvl}Question($questionid: uuid!) {
+					${question.net_answers.length > 0 ? deleteAnswers : ''}
+					${question.net_incorrect_answers.length > 0 ? deleteIncorrectAnswers : ''}
+					${question.net_correct_answers.length > 0 ? deleteCorrectAnswers : ''}
+					delete_net_${activeNetLvl}_net_questions(where: { questionid: { _eq: $questionid } }) {
+						affected_rows
+					}
+				}
+			`,
+				variables: {
+					questionid: question.questionid
+				}
+			});
+
+			myres
+				.then(() => {
+					notifications.success('Question deleted successfully', 3000);
+					getQuestions(activeNetLvl, activeFilter, activeSort, activeSortDir);
+				})
+				.catch((err) => {
+					notifications.danger('Error deleting question, check logs!', 5000);
+					console.log(err);
+				});
+		} catch (err) {
+			notifications.danger('Error deleting question, check logs!', 5000);
+			console.log(err);
+		}
+	}
+
+	async function saveQuestionChanges(input) {
 		try {
 			const myres = client.mutate({
 				Method: 'POST',
@@ -145,7 +218,7 @@
 					notifications.success('Question updated successfully', 3000);
 				})
 				.catch((err) => {
-					notifications.error('Error updating question, check logs!', 5000);
+					notifications.danger('Error updating question, check logs!', 5000);
 					console.log(err);
 				});
 		} catch (err) {
@@ -444,26 +517,50 @@
 		</div>
 		<div class="table-body">
 			{#each queryQuestions as question}
-				<div class="table-row">
-					<div class="table-item expand-column" />
-					<textarea
-						class="table-item question-column"
-						value={question.question}
-						on:change={(e) => {
-							saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
-						}}
-					/>
-					<div class="table-item correct-column">{question.net_answers.length}</div>
-					<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
-					<div class="table-item images-column">10</div>
-					<div class="table-item delete-column">
-						<div class="settings-button">
-							<Icon src={AiOutlineDelete} />
+				{#if question.question != ''}
+					<div class="table-row">
+						<div class="table-item expand-column" />
+						<textarea
+							class="table-item question-column"
+							value={question.question}
+							on:change={(e) => {
+								saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
+							}}
+						/>
+						<div class="table-item correct-column">{question.net_correct_answers.length}</div>
+						<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
+						<div class="table-item images-column">10</div>
+						<div class="table-item delete-column">
+							<div class="delete-button" on:click={deleteQuestion(question.questionid)}>
+								<Icon src={AiOutlineDelete} />
+							</div>
 						</div>
 					</div>
-				</div>
+				{/if}
 			{/each}
-			<div class="add-table-row">
+			{#each queryQuestions as question}
+				{#if question.question === ''}
+					<div class="table-row">
+						<div class="table-item expand-column" />
+						<textarea
+							class="table-item question-column"
+							value={question.question}
+							on:change={(e) => {
+								saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
+							}}
+						/>
+						<div class="table-item correct-column">{question.net_correct_answers.length}</div>
+						<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
+						<div class="table-item images-column">10</div>
+						<div class="table-item delete-column">
+							<div class="delete-button" on:click={deleteQuestion(question.questionid)}>
+								<Icon src={AiOutlineDelete} />
+							</div>
+						</div>
+					</div>
+				{/if}
+			{/each}
+			<div class="add-table-row" on:click={addQuestion()}>
 				<Icon src={AiOutlinePlus} />
 			</div>
 		</div>

@@ -45,7 +45,9 @@ function cleanUpQuestionsForUpload(rawQuestions) {
 			Object.keys(question).forEach((key) => {
 				if (key.includes('answer') && question[key.replace('answer ', 'answerid ')] === undefined) {
 					insertAnswer.answer = question[key];
-					insertAnswer.question = question.question;
+					!!question.questionid
+						? (insertAnswer.questionid = question.questionid)
+						: (insertAnswer.question = question.question);
 					insertAnswers.push(insertAnswer);
 				}
 				if (key.includes('answerid')) {
@@ -60,7 +62,9 @@ function cleanUpQuestionsForUpload(rawQuestions) {
 					question[key.replace('answer ', 'answerid ')] === undefined
 				) {
 					insertCorrectAnswer.correctanswer = question[key];
-					insertCorrectAnswer.question = question.question;
+					!!question.questionid
+						? (insertCorrectAnswer.questionid = question.questionid)
+						: (insertCorrectAnswer.question = question.question);
 					insertCorrectAnswers.push(insertCorrectAnswer);
 				}
 				if (
@@ -78,7 +82,9 @@ function cleanUpQuestionsForUpload(rawQuestions) {
 					question[key.replace('answer ', 'answerid ')] === undefined
 				) {
 					insertIncorrectAnswer.incorrectanswer = question[key];
-					insertIncorrectAnswer.question = question.question;
+					!!question.questionid
+						? (insertIncorrectAnswer.questionid = question.questionid)
+						: (insertIncorrectAnswer.question = question.question);
 					insertIncorrectAnswers.push(insertIncorrectAnswer);
 				}
 				if (key.includes('incorrect answerid')) {
@@ -151,6 +157,46 @@ async function checkAllCaller(
 	return false;
 }
 
+function questionIDMapper(questions, insertAnswers, insertCorrectAnswers, insertIncorrectAnswers) {
+	try {
+		const mappedInsertAnswers = insertAnswers.map((answer) => {
+			const question = questions.find((question) => {
+				return question.question === answer.question;
+			});
+			answer.questionid = question.questionid;
+			!!answer.question && delete answer.question;
+			return answer;
+		});
+
+		const mappedInsertCorrectAnswers = insertCorrectAnswers.map((correctAnswer) => {
+			const question = questions.find((question) => {
+				return question.question === correctAnswer.question;
+			});
+			correctAnswer.questionid = question.questionid;
+			!!correctAnswer.question && delete correctAnswer.question;
+			return correctAnswer;
+		});
+
+		const mappedInsertIncorrectAnswers = insertIncorrectAnswers.map((incorrectAnswer) => {
+			const question = questions.find((question) => {
+				return question.question === incorrectAnswer.question;
+			});
+			incorrectAnswer.questionid = question.questionid;
+			!!incorrectAnswer.question && delete incorrectAnswer.question;
+			return incorrectAnswer;
+		});
+
+		return {
+			mappedInsertAnswers,
+			mappedInsertCorrectAnswers,
+			mappedInsertIncorrectAnswers
+		};
+	} catch (err) {
+		notifications.danger('Error mapping question ids, check logs!', 5000);
+		console.log(err);
+	}
+}
+
 async function uploadAndInsertCaller(
 	insertQuestions,
 	updateQuestions,
@@ -162,9 +208,14 @@ async function uploadAndInsertCaller(
 	updateIncorrectAnswers,
 	netLvl
 ) {
+	let newQuestions = [],
+		mappedInsertAnswers = [],
+		mappedInsertCorrectAnswers = [],
+		mappedInsertIncorrectAnswers = [];
+
 	if (!!insertQuestions) {
 		if (insertQuestions.length > 0) {
-			const newQuestions = await insertQuestionsFromUpload(insertQuestions, netLvl);
+			newQuestions = await insertQuestionsFromUpload(insertQuestions, netLvl);
 
 			if (newQuestions.length !== insertQuestions.length) {
 				notifications.danger('Error inserting questions, check logs!', 5000);
@@ -172,6 +223,8 @@ async function uploadAndInsertCaller(
 				return;
 			}
 		}
+		({ mappedInsertAnswers, mappedInsertCorrectAnswers, mappedInsertIncorrectAnswers } =
+			questionIDMapper(newQuestions, insertAnswers, insertCorrectAnswers, insertIncorrectAnswers));
 	}
 
 	if (!!updateQuestions) {
@@ -186,13 +239,22 @@ async function uploadAndInsertCaller(
 		}
 	}
 
-	if (!!insertAnswers) {
-		if (insertAnswers.length > 0) {
-			const newAnswers = await insertAnswersFromUpload(insertAnswers, netLvl);
+	insertAnswers,
+		insertCorrectAnswers,
+		(insertIncorrectAnswers = questionIDMapper(
+			insertQuestions,
+			insertAnswers,
+			insertCorrectAnswers,
+			insertIncorrectAnswers
+		));
 
-			if (newAnswers.length !== insertAnswers.length) {
+	if (!!mappedInsertAnswers) {
+		if (mappedInsertAnswers.length > 0) {
+			const newAnswers = await insertAnswersFromUpload(mappedInsertAnswers, netLvl);
+
+			if (newAnswers.length !== mappedInsertAnswers.length) {
 				notifications.danger('Error inserting answers, check logs!', 5000);
-				console.log('newAnswers: ', newAnswers, 'insertAnswers: ', insertAnswers);
+				console.log('newAnswers: ', newAnswers, 'insertAnswers: ', mappedInsertAnswers);
 				return;
 			}
 		}
@@ -210,17 +272,20 @@ async function uploadAndInsertCaller(
 		}
 	}
 
-	if (!!insertCorrectAnswers) {
-		if (insertCorrectAnswers.length > 0) {
-			const newCorrectAnswers = await insertCorrectAnswersFromUpload(insertCorrectAnswers, netLvl);
+	if (!!mappedInsertCorrectAnswers) {
+		if (mappedInsertCorrectAnswers.length > 0) {
+			const newCorrectAnswers = await insertCorrectAnswersFromUpload(
+				mappedInsertCorrectAnswers,
+				netLvl
+			);
 
-			if (newCorrectAnswers.length !== insertCorrectAnswers.length) {
+			if (newCorrectAnswers.length !== mappedInsertCorrectAnswers.length) {
 				notifications.danger('Error inserting correct answers, check logs!', 5000);
 				console.log(
 					'newCorrectAnswers: ',
 					newCorrectAnswers,
 					'insertCorrectAnswers: ',
-					insertCorrectAnswers
+					mappedInsertCorrectAnswers
 				);
 				return;
 			}
@@ -247,20 +312,20 @@ async function uploadAndInsertCaller(
 		}
 	}
 
-	if (!!insertIncorrectAnswers) {
-		if (insertIncorrectAnswers.length > 0) {
+	if (!!mappedInsertIncorrectAnswers) {
+		if (mappedInsertIncorrectAnswers.length > 0) {
 			const newIncorrectAnswers = await insertIncorrectAnswersFromUpload(
-				insertIncorrectAnswers,
+				mappedInsertIncorrectAnswers,
 				netLvl
 			);
 
-			if (newIncorrectAnswers.length !== insertIncorrectAnswers.length) {
+			if (newIncorrectAnswers.length !== mappedInsertIncorrectAnswers.length) {
 				notifications.danger('Error inserting incorrect answers, check logs!', 5000);
 				console.log(
 					'newIncorrectAnswers: ',
 					newIncorrectAnswers,
 					'insertIncorrectAnswers: ',
-					insertIncorrectAnswers
+					mappedInsertIncorrectAnswers
 				);
 				return;
 			}

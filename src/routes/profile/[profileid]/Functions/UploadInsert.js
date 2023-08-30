@@ -39,7 +39,7 @@ async function insertAnswersFromUpload(insertAnswers, netLvl) {
 				mutation insert${netLvl}Answers($answers: [net_${netLvl}_net_answers_insert_input!]!) {
 					insert_net_${netLvl}_net_answers(objects: $answers, on_conflict: {constraint: net_answers_pkey}) {
 						returning {
-							question
+							questionid
 							answer
 						}
 					}
@@ -47,7 +47,7 @@ async function insertAnswersFromUpload(insertAnswers, netLvl) {
 			`,
 			variables: {
 				answers: insertAnswers,
-				question: insertAnswers
+				questionid: insertAnswers
 			}
 		});
 
@@ -68,7 +68,7 @@ async function insertCorrectAnswersFromUpload(insertCorrectAnswers, netLvl) {
 				mutation insert${netLvl}CorrectAnswers($correctAnswers: [net_${netLvl}_net_correct_answers_insert_input!]!) {
 					insert_net_${netLvl}_net_correct_answers(objects: $correctAnswers, on_conflict: {constraint: net_correct_answers_pkey}) {
 						returning {
-							question
+							questionid
 							correctanswer
 						}
 					}
@@ -76,7 +76,7 @@ async function insertCorrectAnswersFromUpload(insertCorrectAnswers, netLvl) {
 			`,
 			variables: {
 				correctAnswers: insertCorrectAnswers,
-				question: insertCorrectAnswers
+				questionid: insertCorrectAnswers
 			}
 		});
 
@@ -97,7 +97,7 @@ async function insertIncorrectAnswersFromUpload(insertIncorrectAnswers, netLvl) 
 				mutation insert${netLvl}IncorrectAnswers($incorrectAnswers: [net_${netLvl}_net_incorrect_answers_insert_input!]!) {
 					insert_net_${netLvl}_net_incorrect_answers(objects: $incorrectAnswers, on_conflict: {constraint: net_incorrect_answers_pkey}) {
 						returning {
-							question
+							questionid
 							incorrectanswer
 						}
 					}
@@ -105,7 +105,7 @@ async function insertIncorrectAnswersFromUpload(insertIncorrectAnswers, netLvl) 
 			`,
 			variables: {
 				incorrectAnswers: insertIncorrectAnswers,
-				question: insertIncorrectAnswers
+				questionid: insertIncorrectAnswers
 			}
 		});
 
