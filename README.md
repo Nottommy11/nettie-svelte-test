@@ -10,6 +10,8 @@ Check out the [current deployment!][Deployment]
 
 - [Nettie, A Networking Game](#nettie-a-networking-game)
 	- [Outline](#outline)
+		- [How to Contribute](#how-to-contribute)
+		- [Deployment](#deployment)
 		- [Concepts Covered](#concepts-covered)
 		- [Minimum Viable Product](#minimum-viable-product)
 		- [Assigned Tasks](#assigned-tasks)
@@ -18,6 +20,31 @@ Check out the [current deployment!][Deployment]
 		- [Commands](#commands)
 		- [Dependencies](#dependencies)
 		- [Visual Studio Code Extensions](#visual-studio-code-extensions)
+
+---
+
+### How to Contribute
+<div name="how-to-contribute"/>
+
+This section outlines how to contribute to this project.
+
+1. Become a collaborator on this project.
+2. Clone this project to your local machine.
+3. Create a new branch from the `staging` branch.
+4. Make changes to your branch.
+5. Push your branch to GitHub.
+6. Create a pull request from your branch to the `staging` branch.
+7. Wait for the pull request to be reviewed.
+8. Merge the pull request.
+9. Delete your branch.
+10. Repeat steps 3-9.
+
+---
+
+### Deployment
+<div name="deployment"/>
+
+This section outlines how to deploy this project.
 
 ---
 
