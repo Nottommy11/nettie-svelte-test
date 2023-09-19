@@ -43,15 +43,15 @@ async function checkBeforeInsertAnswersFromUpload(insertAnswers, netLvl) {
 		const myres = client.query({
 			Method: 'POST',
 			query: gql`
-				query check${netLvl}UploadAnswersInsert($answers: [String!]!, $question: [String!]!) {
-					net_${netLvl}_net_answers(where: {_and: [ {answer: { _in: $answers } }, {question: { _in: $question } }]}) {
-						question
+				query check${netLvl}UploadAnswersInsert($answers: [String!]!, $questionid: [uuid!]!) {
+					net_${netLvl}_net_answers(where: {_and: [ {answer: { _in: $answers } }, {questionid: { _in: $questionid } }]}) {
+						questionid
 					}
 				}
 			`,
 			variables: {
 				answers: insertAnswers.map((answer) => answer.answer),
-				question: insertAnswers.map((answer) => answer.question)
+				questionid: insertAnswers.map((answer) => answer.questionid)
 			}
 		});
 
@@ -75,15 +75,15 @@ async function checkBeforeInsertCorrectAnswersFromUpload(insertCorrectAnswers, n
 		const myres = client.query({
 			Method: 'POST',
 			query: gql`
-				query check${netLvl}UploadCorrectAnswersInsert($correctanswers: [String!]!, $question: [String!]!) {
-					net_${netLvl}_net_correct_answers(where: {_and: [ {correctanswer: { _in: $correctanswers } }, {question: { _in: $question } }]}) {
-						question
+				query check${netLvl}UploadCorrectAnswersInsert($correctanswers: [String!]!, $questionid: [uuid!]!) {
+					net_${netLvl}_net_correct_answers(where: {_and: [ {correctanswer: { _in: $correctanswers } }, {questionid: { _in: $questionid } }]}) {
+						questionid
 					}
 				}
 			`,
 			variables: {
 				correctanswers: insertCorrectAnswers.map((correctanswer) => correctanswer.correctanswer),
-				question: insertCorrectAnswers.map((correctanswer) => correctanswer.question)
+				questionid: insertCorrectAnswers.map((correctanswer) => correctanswer.questionid)
 			}
 		});
 
@@ -110,9 +110,9 @@ async function checkBeforeInsertIncorrectAnswersFromUpload(insertIncorrectAnswer
 		const myres = client.query({
 			Method: 'POST',
 			query: gql`
-				query check${netLvl}UploadIncorrectAnswersInsert($incorrectanswers: [String!]!, $question: [String!]!) {
-					net_${netLvl}_net_incorrect_answers(where: {_and: [ {incorrectanswer: { _in: $incorrectanswers } }, {question: { _in: $question } }]}) {
-						question
+				query check${netLvl}UploadIncorrectAnswersInsert($incorrectanswers: [String!]!, $questionid: [uuid!]!) {
+					net_${netLvl}_net_incorrect_answers(where: {_and: [ {incorrectanswer: { _in: $incorrectanswers } }, {questionid: { _in: $questionid } }]}) {
+						questionid
 					}
 				}
 			`,
@@ -120,7 +120,7 @@ async function checkBeforeInsertIncorrectAnswersFromUpload(insertIncorrectAnswer
 				incorrectanswers: insertIncorrectAnswers.map(
 					(incorrectanswer) => incorrectanswer.incorrectanswer
 				),
-				question: insertIncorrectAnswers.map((incorrectanswer) => incorrectanswer.question)
+				questionid: insertIncorrectAnswers.map((incorrectanswer) => incorrectanswer.questionid)
 			}
 		});
 

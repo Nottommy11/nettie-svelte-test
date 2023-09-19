@@ -20,7 +20,7 @@ async function uploadExcel(uploadFile) {
 
 		let netLvl = uploadFile.name.split('_')[1];
 
-		netLvl = 2;
+		netLvl = 1;
 
 		const {
 			insertQuestions,

@@ -35,25 +35,25 @@
 
 			if (sort == 'question') {
 				if (sortDir == 'asc') {
-					orderByClause.push('{ question: asc }');
+					orderByClause.push('{ question: asc_nulls_last }');
 				} else {
-					orderByClause.push('{ question: desc }');
+					orderByClause.push('{ question: desc_nulls_last }');
 				}
 			} else if (sort == 'correct') {
 				if (sortDir == 'asc') {
-					orderByClause.push('{ net_answers_aggregate: { count: asc }}');
+					orderByClause.push('{ net_correct_answers_aggregate: { count: asc }}');
 					orderByClause.push('{ net_incorrect_answers_aggregate: { count: asc }}');
 				} else {
-					orderByClause.push('{ net_answers_aggregate: { count: desc }}');
+					orderByClause.push('{ net_correct_answers_aggregate: { count: desc }}');
 					orderByClause.push('{ net_incorrect_answers_aggregate: { count: desc }}');
 				}
 			} else if (sort == 'incorrect') {
 				if (sortDir == 'asc') {
 					orderByClause.push('{ net_incorrect_answers_aggregate: { count: asc }}');
-					orderByClause.push('{ net_answers_aggregate: { count: asc }}');
+					orderByClause.push('{ net_correct_answers_aggregate: { count: asc }}');
 				} else {
 					orderByClause.push('{ net_incorrect_answers_aggregate: { count: desc }}');
-					orderByClause.push('{ net_answers_aggregate: { count: desc }}');
+					orderByClause.push('{ net_correct_answers_aggregate: { count: desc }}');
 				}
 			} else if (sort == 'images') {
 				if (sortDir == 'asc') {
@@ -129,15 +129,12 @@
 			const myres = client.mutate({
 				Method: 'POST',
 				mutation: gql`
-				mutation add${activeNetLvl}Question($question: String!) {
-					insert_net_${activeNetLvl}_net_questions(objects: { question: $question }) {
+				mutation add${activeNetLvl}Question {
+					insert_net_${activeNetLvl}_net_questions(objects: { question: "" }) {
 						affected_rows
 					}
 				}
-			`,
-				variables: {
-					question: ''
-				}
+			`
 			});
 
 			myres
@@ -517,48 +514,24 @@
 		</div>
 		<div class="table-body">
 			{#each queryQuestions as question}
-				{#if question.question != ''}
-					<div class="table-row">
-						<div class="table-item expand-column" />
-						<textarea
-							class="table-item question-column"
-							value={question.question}
-							on:change={(e) => {
-								saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
-							}}
-						/>
-						<div class="table-item correct-column">{question.net_correct_answers.length}</div>
-						<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
-						<div class="table-item images-column">10</div>
-						<div class="table-item delete-column">
-							<div class="delete-button" on:click={deleteQuestion(question.questionid)}>
-								<Icon src={AiOutlineDelete} />
-							</div>
+				<div class="table-row">
+					<div class="table-item expand-column" />
+					<textarea
+						class="table-item question-column"
+						value={question.question}
+						on:change={(e) => {
+							saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
+						}}
+					/>
+					<div class="table-item correct-column">{question.net_correct_answers.length}</div>
+					<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
+					<div class="table-item images-column">10</div>
+					<div class="table-item delete-column">
+						<div class="delete-button" on:click={deleteQuestion(question)}>
+							<Icon src={AiOutlineDelete} />
 						</div>
 					</div>
-				{/if}
-			{/each}
-			{#each queryQuestions as question}
-				{#if question.question === ''}
-					<div class="table-row">
-						<div class="table-item expand-column" />
-						<textarea
-							class="table-item question-column"
-							value={question.question}
-							on:change={(e) => {
-								saveQuestionChanges({ question: e.target.value, questionid: question.questionid });
-							}}
-						/>
-						<div class="table-item correct-column">{question.net_correct_answers.length}</div>
-						<div class="table-item incorrect-column">{question.net_incorrect_answers.length}</div>
-						<div class="table-item images-column">10</div>
-						<div class="table-item delete-column">
-							<div class="delete-button" on:click={deleteQuestion(question.questionid)}>
-								<Icon src={AiOutlineDelete} />
-							</div>
-						</div>
-					</div>
-				{/if}
+				</div>
 			{/each}
 			<div class="add-table-row" on:click={addQuestion()}>
 				<Icon src={AiOutlinePlus} />
