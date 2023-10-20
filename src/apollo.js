@@ -4,7 +4,7 @@ const client = createApolloClient();
 
 function createApolloClient() {
 	const link = new HttpLink({
-		uri: 'https://nottommy11.hasura.app/v1/graphql',
+		uri: 'https://wscnettie.hasura.app/v1/graphql',
 		headers: {
 			'x-hasura-admin-secret': 'OzKHw0o3Ce690tn1Wlq43sR6s2fleKPeBlv6oG7BMjmtgS2EBfXUzeH0AE7M4PhC'
 		}
